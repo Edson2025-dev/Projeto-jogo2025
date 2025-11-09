@@ -1,6 +1,5 @@
 import pygame
-import sys
-import os
+
 
 
 pygame.init()
@@ -20,7 +19,23 @@ AZUL = (0, 0, 255)
 velocidade = 4
 gravidade = 0.5
 velocidade_pulo_inicial = -10
-ataque_personagem_principal=10
+
+
+
+VELOCIDADE_PROJETIL = 12        
+TEMPO_COOLDOWN_MS = 250        
+ultimo_tiro_tempo = 0  
+
+
+
+
+
+
+
+
+
+
+
 
 
 START, PLAYING, PAUSE, GAMEOVER = "start", "playing", "pause", "gameover"
@@ -84,14 +99,25 @@ clock = pygame.time.Clock()
 
 
 
-
-
 class Personagem(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         
 
         self.sprites=[]
+
+        self.sprit_pulo=[]
+
+        self.sprit_pulo.append(pygame.image.load('imagens/pulando.png'))
+        self.sprit_pulo.append(pygame.image.load('imagens/pulando.png'))
+        
+        
+        
+
+   
+
+
+
 
         self.sprites.append(pygame.image.load('imagens/Freira1_direita.png'))
         self.sprites.append(pygame.image.load('imagens/Freira2_direita.png'))
@@ -106,11 +132,19 @@ class Personagem(pygame.sprite.Sprite):
         self.sprites.append(pygame.image.load('imagens/Freira11_direita.png'))
         self.sprites.append(pygame.image.load('imagens/Freira12_direita.png'))
         self.sprites.append(pygame.image.load('imagens/Freira13_direita.png'))
+        
+        
+        
         self.atual=0
+
+        self.Atual=0
+
+        self.image=self.sprit_pulo[self.Atual]
+        self.image=pygame.transform.scale(self.image,(24*3,32*3))
+
 
         self.image=self.sprites[self.atual]
         self.image=pygame.transform.scale(self.image,(24*3,32*3))
-
 
         
         self.image=self.sprites[self.atual]
@@ -120,26 +154,27 @@ class Personagem(pygame.sprite.Sprite):
         self.rect.topleft=(x_inicial,y_inicial)
 
 
-
-
-
-
-
-
- 
-
-
-
         self.velocidade_x = 0
         self.velocidade_y = 0
 
         self.animar=False
         self.no_chao = True
         self.atacando=False
-        self.animar_pulo=False
-
+        self.pulo=False
 
         self.facing_right = True
+
+
+
+
+
+
+
+
+
+
+
+
         
 
         
@@ -150,30 +185,55 @@ class Personagem(pygame.sprite.Sprite):
     def update(self):
         
         if self.animar==True:
-            self.atual=self.atual + 0.22
+            self.atual=self.atual + 0.09
             if self.atual>=len(self.sprites):
               self.atual = 0
               self.animar=True
             self.image = self.sprites[int(self.atual)]
             self.image=pygame.transform.scale(self.image,(24*3,32*3))
-
+            
             if not self.facing_right:
                 self.image = pygame.transform.flip(self.image, True, False)
 
-        if  self.atacando==True:
-             self.atual_ataque=self.atual_ataque + 0.22
+        
+        
+        
+        
+        
+        if  self.atacando==True :
+             self.atual_ataque+=self.atual_ataque + 0.02
              if self.atual_ataque>=len(self.sprites_ataque):
                  self.atual_ataque = 0
                  self.atacando=True
              self.image_ataque = self.sprites_ataque[int(self.atual_ataque)]
              self.image_ataque=pygame.transform.scale(self.image_ataque,(24*3,32*3))
 
-        
 
+        if self.pulo==True:
+             self.Atual=self.Atual+0.09
+             if self.Atual>=len(self.sprit_pulo):
+                 self.Atual = len(self.sprit_pulo) 
+                 self.pulo=True
+                 self.Atual=0
+             self.image = self.sprit_pulo[int(self.Atual)]
+             self.image=pygame.transform.scale(self.image,(24*3,32*3))
+
+            
+
+             if not self.facing_right:
+                self.image = pygame.transform.flip(self.image, True, False)
+
+
+          
+
+        
         
         if not self.no_chao:
             self.velocidade_y += gravidade
-        
+
+
+            
+
 
         
             
@@ -191,6 +251,8 @@ class Personagem(pygame.sprite.Sprite):
             self.rect.bottom = altura_tela
             self.velocidade_y = 0
             self.no_chao = True
+            
+                 
 
     
     
@@ -198,6 +260,7 @@ class Personagem(pygame.sprite.Sprite):
         self.animar=True
     def mover(self, direcao):
         self.animar = True
+        
         if direcao == "esquerda":
             self.velocidade_x = -velocidade
             self.facing_right = False
@@ -209,17 +272,61 @@ class Personagem(pygame.sprite.Sprite):
     def parar(self):
         self.velocidade_x = 0
         if self.no_chao:
-            self.animar = False
+            self.animar = True
+            self.pulo=False
     
     def pular(self):
-
+        self.pulo=True
         if self.no_chao :
             self.velocidade_y = velocidade_pulo_inicial
             self.no_chao = False
+
+
+     
             
 
     def atacar(self, ):
         self.atacando=True
+
+
+
+class Projetil(pygame.sprite.Sprite):
+    def __init__(self, x, y, direcao_direita=True):
+        super().__init__()
+    
+        try:
+            self.image = pygame.image.load('imagens/ATQ.png').convert_alpha()
+        except Exception:
+            
+            self.image = pygame.Surface((12, 6), pygame.SRCALPHA)
+            pygame.draw.rect(self.image, (255, 200, 0), self.image.get_rect())
+
+        self.image = pygame.transform.scale(self.image, (60, 34))
+        if not direcao_direita:
+            self.image = pygame.transform.flip(self.image, True, False)
+        self.rect = self.image.get_rect()
+        self.rect.centerx = x
+        self.rect.centery = y
+        self.vel_x = VELOCIDADE_PROJETIL if direcao_direita else -VELOCIDADE_PROJETIL
+    
+    def update(self):
+        self.rect.x += self.vel_x
+        if self.rect.right < 0 or self.rect.left > largura_tela:
+            self.kill()
+
+def atirar(personagem):
+    global ultimo_tiro_tempo
+    agora = pygame.time.get_ticks()
+    if agora - ultimo_tiro_tempo < TEMPO_COOLDOWN_MS:
+        return
+    ultimo_tiro_tempo = agora
+
+    offset_x = 20 if personagem.facing_right else -20
+    x_spawn = personagem.rect.centerx + offset_x
+    y_spawn = personagem.rect.centery - 10
+
+    p = Projetil(x_spawn, y_spawn, direcao_direita=personagem.facing_right)
+    projeteis.add(p)
       
 
 
@@ -236,6 +343,9 @@ y_inicial = 530
 todas_as_sprites=pygame.sprite.Group()
 personagem=Personagem()
 todas_as_sprites.add(personagem)
+projeteis = pygame.sprite.Group()
+
+
 
 
 
@@ -271,6 +381,9 @@ while True:
 
             elif estado_jogo == GAMEOVER and event.key == pygame.K_RETURN:
                 estado_jogo = START
+                
+                musica_de_fundo1=pygame.mixer.music.load("SONS/musica_de_fundo1.mp3")
+                pygame.mixer.music.play(-1)
 
             if estado_jogo == PLAYING:
                 if event.key == pygame.K_a: 
@@ -283,8 +396,11 @@ while True:
                     personagem.pular()
                     barulho_pulo.play()
                     
-                if event.key == pygame.K_z:
-                    personagem.atacar()
+                
+                if event.key == pygame.K_x:
+                
+                    atirar(personagem)
+                
 
         if event.type == pygame.KEYUP and estado_jogo == PLAYING:
             if event.key == pygame.K_LEFT and personagem.velocidade_x < 0:
@@ -312,11 +428,19 @@ while True:
             tela.blit(Imagem_de_fundo4, (0, 0))
 
         todas_as_sprites.update()
+        projeteis.update()
         todas_as_sprites.draw(tela)
+        projeteis.draw(tela)
+
+
+
+
+     
+
         
 
     
-
+  
     
         if fase_atual == 1 and personagem.rect.right >= largura_tela:
             fase_atual = 2
@@ -334,11 +458,28 @@ while True:
             personagem.rect.x = 50
             personagem.rect.y = altura_tela - 100
 
-
-        if fase_atual == 2 and personagem.rect.right >= largura_tela:
+        if fase_atual == 2 and personagem.rect.left <=0 :
             fase_atual = 1
-            personagem.rect.x = 50
+            personagem.rect.x = 1150
             personagem.rect.y = altura_tela - 100
+
+        if fase_atual == 3 and personagem.rect.left <=0 :
+            fase_atual = 2
+            personagem.rect.x = 1150
+            personagem.rect.y = altura_tela - 100
+
+        if fase_atual == 4 and personagem.rect.left <=0 :
+            fase_atual = 3
+            personagem.rect.x = 800
+            personagem.rect.y = altura_tela - 100
+
+
+       
+
+        
+
+
+        
 
 
             
@@ -346,4 +487,5 @@ while True:
 
     pygame.display.flip()
     clock.tick(60)
+ 
 
