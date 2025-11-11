@@ -294,12 +294,9 @@ class Projetil(pygame.sprite.Sprite):
     def __init__(self, x, y, direcao_direita=True):
         super().__init__()
     
-        try:
-            self.image = pygame.image.load('imagens/ATQ.png').convert_alpha()
-        except Exception:
-            
-            self.image = pygame.Surface((12, 6), pygame.SRCALPHA)
-            pygame.draw.rect(self.image, (255, 200, 0), self.image.get_rect())
+        
+        self.image = pygame.image.load('imagens/ATQ.png').convert_alpha()
+        
 
         self.image = pygame.transform.scale(self.image, (60, 34))
         if not direcao_direita:
@@ -488,4 +485,5 @@ while True:
     pygame.display.flip()
     clock.tick(60)
  
+
 
