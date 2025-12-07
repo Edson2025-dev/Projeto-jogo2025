@@ -41,7 +41,7 @@ ultimo_tiro_tempo = 0
 START, PLAYING, PAUSE, GAMEOVER = "start", "playing", "pause", "gameover"
 estado_jogo = START
 
-fase_atual = 1
+fase_atual = 3
 
 
 
@@ -327,26 +327,163 @@ def atirar(personagem):
       
 
 
+def update(self):
+        
+        if self.animar==True:
+            self.atual=self.atual + 0.09
+            if self.atual>=len(self.sprites):
+              self.atual = 0
+              self.animar=True
+            self.image = self.sprites[int(self.atual)]
+            self.image=pygame.transform.scale(self.image,(24*3,32*3))
+            
+            if not self.facing_right:
+                self.image = pygame.transform.flip(self.image, True, False)
+
+        
+        
+        
+        
+        
+        if  self.atacando==True :
+             self.atual_ataque+=self.atual_ataque + 0.02
+             if self.atual_ataque>=len(self.sprites_ataque):
+                 self.atual_ataque = 0
+                 self.atacando=True
+             self.image_ataque = self.sprites_ataque[int(self.atual_ataque)]
+             self.image_ataque=pygame.transform.scale(self.image_ataque,(24*3,32*3))
+
+
+        if self.pulo==True:
+             self.Atual=self.Atual+0.09
+             if self.Atual>=len(self.sprit_pulo):
+                 self.Atual = len(self.sprit_pulo) 
+                 self.pulo=True
+                 self.Atual=0
+             self.image = self.sprit_pulo[int(self.Atual)]
+             self.image=pygame.transform.scale(self.image,(24*3,32*3))
+
+            
+
+             if not self.facing_right:
+                self.image = pygame.transform.flip(self.image, True, False)
+
+                
+class BossDaIra(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+
+        self.spritesdaira = []
+        self.spriteDoAtaque = []
+
+        self.spritesdaira.append(pygame.image.load('imagens/Pecado_da_Ira1.png')),
+        self.spritesdaira.append(pygame.image.load('imagens/Pecado_da_Ira2.png')),
+        self.spritesdaira.append(pygame.image.load('imagens/Pecado_da_Ira3.png')),
+        self.spritesdaira.append(pygame.image.load('imagens/Pecado_da_Ira4.png'))
+
+        self.spriteDoAtaque.append(pygame.image.load('imagens/boss_atacando1.png')),
+        self.spriteDoAtaque.append(pygame.image.load('imagens/boss_atacando2.png')),
+        self.spriteDoAtaque.append(pygame.image.load('imagens/boss_atacando3.png')),
+        self.spriteDoAtaque.append(pygame.image.load('imagens/boss_atacando4.png'))
+
+        self.atacar = False
+
+        self.atual = 0
+        self.atualdoataque = 0
+        self.image = self.spritesdaira[self.atual]
+        self.image = pygame.transform.scale(self.image, (24*3,32*3)) 
+
+
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (xDoBoss, yDoBoss)
+
+    def update(self):
+        self.atual = self.atual + 0.09
+        if self.atual >= len(self.spritesdaira):
+            self.atual = 0
+        self.image = self.spritesdaira[int(self.atual)]
+        self.image = pygame.transform.scale(self.image, (60*3,70*3)) 
+
+    def atacar(self):
+        self.atacar = True
+        if self.atacar == True:
+            self.atualdoataque = self.atualdoataque + 0.09
+            if self.atualdoataque >= len(self.spriteDoAtaque):
+                self.atualdoataque = 0
+                self.atacar = False
+            self.image = self.spriteDoAtaque[int(self.atualdoataque)]
+            self.image = pygame.transform.scale(self.image, (60*3,70*3))
+
+
+class Caveira(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+
+        self.spriteinimigo = []
+
+        self.spriteinimigo.append(pygame.image.load('Inimigos/Sprite-0002.png'))
+
+        self.atacar = False
+
+        self.atual = 0
+        self.image = self.spriteinimigo[self.atual]
+
+        self.image = pygame.transform.scale(self.image, (15*3,23*3)) 
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (xInimigo1, yInimigo1)
+
+class Osso(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+
+        self.spriteosso = []
+
+        self.spriteosso.append(pygame.image.load('Inimigos/Sprite-0003.png'))
+
+        self.atacar = False
+
+        self.atual = 0
+        self.image = self.spriteosso[self.atual]
+
+        self.image = pygame.transform.scale(self.image, (18*3,18*3)) 
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (xinimigo2, yinimigo2)
+
+xInimigo1 = 600
+yInimigo1 = 500
+
+xinimigo2 = 800
+yinimigo2 = 574
+
+xDoBoss = 300
+yDoBoss = 417
 
 x_inicial = 230
 y_inicial = 530
 
 
 
-    
-
-       
-
-todas_as_sprites=pygame.sprite.Group()
+inimigo2 = Osso()
+inimigo1 = Caveira()
+boss = BossDaIra()
 personagem=Personagem()
-todas_as_sprites.add(personagem)
+
+TodasAsSpritesDoInimigo1 = pygame.sprite.Group()
+TodasAsSpritesDoBoss=pygame.sprite.Group()
+todas_as_sprites=pygame.sprite.Group()
+TodasAsSpritesDoInimigo2 = pygame.sprite.Group()
 projeteis = pygame.sprite.Group()
 
+TodasAsSpritesDoBoss.add(boss)
+TodasAsSpritesDoInimigo1.add(inimigo1)
+TodasAsSpritesDoInimigo2.add(inimigo2)
+todas_as_sprites.add(personagem)
 
 
 
 
-        
+
+
 
 
 
@@ -417,12 +554,20 @@ while True:
     elif estado_jogo == PLAYING:
         if fase_atual == 1:
             tela.blit(Imagem_de_fundo, (0, 0))
+            boss.update()
         if fase_atual == 2:
             tela.blit(Imagem_de_fundo2, (0, 0))
+            TodasAsSpritesDoInimigo1.draw(tela)
+            TodasAsSpritesDoInimigo1.update()
         if fase_atual == 3:
             tela.blit(Imagem_de_fundo3, (0, 0))
-        if fase_atual==4:
+            TodasAsSpritesDoInimigo2.draw(tela)
+            TodasAsSpritesDoInimigo2.update()
+        if fase_atual == 4:
             tela.blit(Imagem_de_fundo4, (0, 0))
+            TodasAsSpritesDoBoss.draw(tela)
+            TodasAsSpritesDoBoss.update()
+
 
         todas_as_sprites.update()
         projeteis.update()
@@ -485,5 +630,4 @@ while True:
     pygame.display.flip()
     clock.tick(60)
  
-
 
