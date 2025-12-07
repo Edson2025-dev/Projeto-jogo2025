@@ -41,7 +41,7 @@ ultimo_tiro_tempo = 0
 START, PLAYING, PAUSE, GAMEOVER = "start", "playing", "pause", "gameover"
 estado_jogo = START
 
-fase_atual = 3
+fase_atual = 1
 
 
 
@@ -630,4 +630,5 @@ while True:
     pygame.display.flip()
     clock.tick(60)
  
+
 
