@@ -18,13 +18,19 @@ AZUL = (0, 0, 255)
 
 velocidade = 4
 gravidade = 0.5
-velocidade_pulo_inicial = -10
+velocidade_pulo_inicial = -11
+
+TEMPO_SPAWN_INIMIGO = 3000  # isso é 3 segundos
+ultimo_spawn = 0
+
 
 
 
 VELOCIDADE_PROJETIL = 12        
 TEMPO_COOLDOWN_MS = 250        
 ultimo_tiro_tempo = 0  
+
+
 
 
 
@@ -64,7 +70,7 @@ tela_pause = pygame.transform.scale(tela_pause, (largura_tela, altura_tela))
 
 
 
-tela_game_over =  pygame.image.load("imagens/tela de pause 2.png").convert()
+tela_game_over =  pygame.image.load("imagens/game_over.jpg").convert()
 tela_game_over = pygame.transform.scale(tela_game_over, (largura_tela, altura_tela))
 
 
@@ -81,6 +87,16 @@ Imagem_de_fundo3 = pygame.transform.scale(Imagem_de_fundo3, (largura_tela, altur
 
 Imagem_de_fundo4 = pygame.image.load("imagens/fase 4.jpg").convert()  
 Imagem_de_fundo4 = pygame.transform.scale(Imagem_de_fundo4, (largura_tela, altura_tela))
+
+
+
+
+coracao_cheio = pygame.image.load("imagens/coração cheio.png").convert_alpha()
+coracao_vazio = pygame.image.load("imagens/coração vazio.png").convert_alpha()
+
+coracao_cheio = pygame.transform.scale(coracao_cheio, (32, 32))
+coracao_vazio = pygame.transform.scale(coracao_vazio, (32, 32))
+
 
 
 
@@ -163,6 +179,10 @@ class Personagem(pygame.sprite.Sprite):
         self.pulo=False
 
         self.facing_right = True
+
+        self.vida_maxima = 5
+        self.vida_atual = 5
+
 
 
 
@@ -296,7 +316,7 @@ class Projetil(pygame.sprite.Sprite):
     
         
         self.image = pygame.image.load('imagens/ATQ.png').convert_alpha()
-        
+       
 
         self.image = pygame.transform.scale(self.image, (60, 34))
         if not direcao_direita:
@@ -304,7 +324,11 @@ class Projetil(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.centerx = x
         self.rect.centery = y
-        self.vel_x = VELOCIDADE_PROJETIL if direcao_direita else -VELOCIDADE_PROJETIL
+        if direcao_direita:
+         self.vel_x = VELOCIDADE_PROJETIL
+        else:
+         self.vel_x = -VELOCIDADE_PROJETIL
+
     
     def update(self):
         self.rect.x += self.vel_x
@@ -324,166 +348,67 @@ def atirar(personagem):
 
     p = Projetil(x_spawn, y_spawn, direcao_direita=personagem.facing_right)
     projeteis.add(p)
+
+
+def desenhar_vida(tela, vida_atual, vida_maxima):
+    x_inicial = 20
+    y_inicial = 20
+
+    for i in range(vida_maxima):
+        if i < vida_atual:
+            tela.blit(coracao_cheio, (x_inicial + i * 36, y_inicial))
+        else:
+            tela.blit(coracao_vazio, (x_inicial + i * 36, y_inicial))
+
+
+
+
+
+class Inimigo(pygame.sprite.Sprite):
+    def __init__(self, imagem, velocidade):
+        super().__init__()
+        self.image = pygame.image.load(imagem).convert_alpha()
+        self.image = pygame.transform.scale(self.image, (60, 80))
+        self.rect = self.image.get_rect()
+        self.rect.x = largura_tela
+        self.rect.y = altura_tela - 145
+        self.velocidade = velocidade
+
+
+        
+
+    
+
+    def update(self):
+        self.rect.x -= self.velocidade
+        if self.rect.right < 0:
+            self.kill()
+
       
 
 
-def update(self):
-        
-        if self.animar==True:
-            self.atual=self.atual + 0.09
-            if self.atual>=len(self.sprites):
-              self.atual = 0
-              self.animar=True
-            self.image = self.sprites[int(self.atual)]
-            self.image=pygame.transform.scale(self.image,(24*3,32*3))
-            
-            if not self.facing_right:
-                self.image = pygame.transform.flip(self.image, True, False)
-
-        
-        
-        
-        
-        
-        if  self.atacando==True :
-             self.atual_ataque+=self.atual_ataque + 0.02
-             if self.atual_ataque>=len(self.sprites_ataque):
-                 self.atual_ataque = 0
-                 self.atacando=True
-             self.image_ataque = self.sprites_ataque[int(self.atual_ataque)]
-             self.image_ataque=pygame.transform.scale(self.image_ataque,(24*3,32*3))
-
-
-        if self.pulo==True:
-             self.Atual=self.Atual+0.09
-             if self.Atual>=len(self.sprit_pulo):
-                 self.Atual = len(self.sprit_pulo) 
-                 self.pulo=True
-                 self.Atual=0
-             self.image = self.sprit_pulo[int(self.Atual)]
-             self.image=pygame.transform.scale(self.image,(24*3,32*3))
-
-            
-
-             if not self.facing_right:
-                self.image = pygame.transform.flip(self.image, True, False)
-
-                
-class BossDaIra(pygame.sprite.Sprite):
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-
-        self.spritesdaira = []
-        self.spriteDoAtaque = []
-
-        self.spritesdaira.append(pygame.image.load('imagens/Pecado_da_Ira1.png')),
-        self.spritesdaira.append(pygame.image.load('imagens/Pecado_da_Ira2.png')),
-        self.spritesdaira.append(pygame.image.load('imagens/Pecado_da_Ira3.png')),
-        self.spritesdaira.append(pygame.image.load('imagens/Pecado_da_Ira4.png'))
-
-        self.spriteDoAtaque.append(pygame.image.load('imagens/boss_atacando1.png')),
-        self.spriteDoAtaque.append(pygame.image.load('imagens/boss_atacando2.png')),
-        self.spriteDoAtaque.append(pygame.image.load('imagens/boss_atacando3.png')),
-        self.spriteDoAtaque.append(pygame.image.load('imagens/boss_atacando4.png'))
-
-        self.atacar = False
-
-        self.atual = 0
-        self.atualdoataque = 0
-        self.image = self.spritesdaira[self.atual]
-        self.image = pygame.transform.scale(self.image, (24*3,32*3)) 
-
-
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (xDoBoss, yDoBoss)
-
-    def update(self):
-        self.atual = self.atual + 0.09
-        if self.atual >= len(self.spritesdaira):
-            self.atual = 0
-        self.image = self.spritesdaira[int(self.atual)]
-        self.image = pygame.transform.scale(self.image, (60*3,70*3)) 
-
-    def atacar(self):
-        self.atacar = True
-        if self.atacar == True:
-            self.atualdoataque = self.atualdoataque + 0.09
-            if self.atualdoataque >= len(self.spriteDoAtaque):
-                self.atualdoataque = 0
-                self.atacar = False
-            self.image = self.spriteDoAtaque[int(self.atualdoataque)]
-            self.image = pygame.transform.scale(self.image, (60*3,70*3))
-
-
-class Caveira(pygame.sprite.Sprite):
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-
-        self.spriteinimigo = []
-
-        self.spriteinimigo.append(pygame.image.load('Inimigos/Sprite-0002.png'))
-
-        self.atacar = False
-
-        self.atual = 0
-        self.image = self.spriteinimigo[self.atual]
-
-        self.image = pygame.transform.scale(self.image, (15*3,23*3)) 
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (xInimigo1, yInimigo1)
-
-class Osso(pygame.sprite.Sprite):
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-
-        self.spriteosso = []
-
-        self.spriteosso.append(pygame.image.load('Inimigos/Sprite-0003.png'))
-
-        self.atacar = False
-
-        self.atual = 0
-        self.image = self.spriteosso[self.atual]
-
-        self.image = pygame.transform.scale(self.image, (18*3,18*3)) 
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (xinimigo2, yinimigo2)
-
-xInimigo1 = 600
-yInimigo1 = 500
-
-xinimigo2 = 800
-yinimigo2 = 574
-
-xDoBoss = 300
-yDoBoss = 417
 
 x_inicial = 230
 y_inicial = 530
 
 
 
-inimigo2 = Osso()
-inimigo1 = Caveira()
-boss = BossDaIra()
-personagem=Personagem()
+    
 
-TodasAsSpritesDoInimigo1 = pygame.sprite.Group()
-TodasAsSpritesDoBoss=pygame.sprite.Group()
+       
+
 todas_as_sprites=pygame.sprite.Group()
-TodasAsSpritesDoInimigo2 = pygame.sprite.Group()
-projeteis = pygame.sprite.Group()
-
-TodasAsSpritesDoBoss.add(boss)
-TodasAsSpritesDoInimigo1.add(inimigo1)
-TodasAsSpritesDoInimigo2.add(inimigo2)
+personagem=Personagem()
 todas_as_sprites.add(personagem)
+projeteis = pygame.sprite.Group()
+inimigos = pygame.sprite.Group()
 
 
 
 
 
 
+        
 
 
 
@@ -508,16 +433,28 @@ while True:
 
 
             elif estado_jogo == PAUSE and event.key == pygame.K_p:
-                estado_jogo = PLAYING
+                estado_jogo = START
                 musica_de_fundo=pygame.mixer.music.load("SONS/musica de fundo.mp3")
                 pygame.mixer.music.play(-1)
 
 
             elif estado_jogo == GAMEOVER and event.key == pygame.K_RETURN:
-                estado_jogo = START
-                
-                musica_de_fundo1=pygame.mixer.music.load("SONS/musica_de_fundo1.mp3")
-                pygame.mixer.music.play(-1)
+                 estado_jogo = START
+                 fase_atual = 1
+
+                 personagem.rect.topleft = (x_inicial, y_inicial)
+                 personagem.vida_atual = personagem.vida_maxima
+                 personagem.velocidade_x = 0
+                 personagem.velocidade_y = 0
+
+                 inimigos.empty()
+                 projeteis.empty()
+                 todas_as_sprites.empty()
+                 todas_as_sprites.add(personagem)
+
+                 pygame.mixer.music.load("SONS/musica_de_fundo1.mp3")
+                 pygame.mixer.music.play(-1)
+
 
             if estado_jogo == PLAYING:
                 if event.key == pygame.K_a: 
@@ -549,40 +486,62 @@ while True:
 
     if estado_jogo == START:
         tela.blit(tela_start, (0, 0))
+
+    
        
 
     elif estado_jogo == PLAYING:
         if fase_atual == 1:
             tela.blit(Imagem_de_fundo, (0, 0))
-            boss.update()
         if fase_atual == 2:
             tela.blit(Imagem_de_fundo2, (0, 0))
-            TodasAsSpritesDoInimigo1.draw(tela)
-            TodasAsSpritesDoInimigo1.update()
         if fase_atual == 3:
             tela.blit(Imagem_de_fundo3, (0, 0))
-            TodasAsSpritesDoInimigo2.draw(tela)
-            TodasAsSpritesDoInimigo2.update()
-        if fase_atual == 4:
+        if fase_atual==4:
             tela.blit(Imagem_de_fundo4, (0, 0))
-            TodasAsSpritesDoBoss.draw(tela)
-            TodasAsSpritesDoBoss.update()
+
+        tempo_atual = pygame.time.get_ticks()
+        desenhar_vida(tela, personagem.vida_atual, personagem.vida_maxima)
+
+
+
+        if fase_atual == 2:
+            if tempo_atual - ultimo_spawn > TEMPO_SPAWN_INIMIGO:
+               inimigo = Inimigo("imagens/VILÃO1.png", velocidade=5)
+               inimigos.add(inimigo)
+               todas_as_sprites.add(inimigo)
+               ultimo_spawn = tempo_atual
+
+
+        if fase_atual == 3:
+            if tempo_atual - ultimo_spawn > TEMPO_SPAWN_INIMIGO:
+               inimigo = Inimigo("imagens/VILÃO1.png", velocidade=5)
+               inimigos.add(inimigo)
+               todas_as_sprites.add(inimigo)
+               ultimo_spawn = tempo_atual
+               
 
 
         todas_as_sprites.update()
         projeteis.update()
+
+        pygame.sprite.groupcollide(projeteis, inimigos, True, True)
+
         todas_as_sprites.draw(tela)
         projeteis.draw(tela)
-
-
-
-
-     
-
-        
+        #inimigos.update()
+        inimigos.draw(tela)
 
     
-  
+
+        colisoes = pygame.sprite.spritecollide(personagem, inimigos, True)
+        if colisoes:
+         personagem.vida_atual -= 1
+        if personagem.vida_atual <= 0:
+           estado_jogo = GAMEOVER
+
+    
+        
     
         if fase_atual == 1 and personagem.rect.right >= largura_tela:
             fase_atual = 2
@@ -614,7 +573,10 @@ while True:
             fase_atual = 3
             personagem.rect.x = 800
             personagem.rect.y = altura_tela - 100
+    
 
+    elif estado_jogo == GAMEOVER:
+         tela.blit(tela_game_over, (0, 0))
 
        
 
@@ -630,5 +592,8 @@ while True:
     pygame.display.flip()
     clock.tick(60)
  
+
+ 
+
 
 
