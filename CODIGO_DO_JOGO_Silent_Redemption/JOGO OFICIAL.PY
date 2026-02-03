@@ -588,7 +588,7 @@ while True:
             
 
             elif estado_jogo == PAUSE and event.key == pygame.K_p:
-                estado_jogo = START
+                estado_jogo = PLAYING
                 musica_de_fundo=pygame.mixer.music.load("Projeto-jogo2025-main/SONS/musica de fundo.mp3")
                 pygame.mixer.music.play(-1)
 
@@ -813,6 +813,7 @@ while True:
  
 
  
+
 
 
 
